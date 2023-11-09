@@ -79,7 +79,7 @@ def find_all(collection_name: str, use_filter=False, query=None, args=None):
 # this method can be used to delete many, just set optional parameter as True
 # set <use_delete_many> True and query to empty to delete all documents
 # return the deleted file
-def delete(collection_name: str, query={}, use_delete_many=False):
+def delete(collection_name: str, query=None, use_delete_many=False):
     try:
         if not use_delete_many: return database[collection_name].delete_one(query)
         else: return database[collection_name].delete_many(query)
@@ -93,6 +93,6 @@ def delete(collection_name: str, query={}, use_delete_many=False):
 def update(collection_name: str, query: dict, new_values: dict, use_update_many=False):
     try:
         if not use_update_many: return database[collection_name].update_one(query, new_values)
-        else: return database[collection_name].update_many(query)
+        else: return database[collection_name].update_many(query, new_values)
     except Exception as ex:
         raise Exception(f"Unable to delete occurrence {database[collection_name]}\nError: {ex}")

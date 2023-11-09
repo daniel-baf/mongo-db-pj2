@@ -1,5 +1,5 @@
 from . import DB
-from datetime import datetime
+from datetime import datetime, timedelta
 
 collection_names = ["Manager", "Project", "Service"]
 
@@ -9,6 +9,11 @@ def reset_setup():
     for collection in collection_names:
         DB.drop_collection(collection)
         DB.create_collection(collection)
+    # create services
+    insert_service({"service": "LUZ", "price": 123, "quantity": 0})
+    insert_service({"service": "AGUA", "price": 76, "quantity": 0})
+    insert_service({"service": "BASURA", "price": 20, "quantity": 0})
+    insert_service({"service": "ALUMBRADO PUBLICO", "price": 15, "quantity": 0})
 
 
 # -----------------------------------
@@ -31,36 +36,46 @@ def insert_managers(managers_dictionary_list: list[dict]):
 # member structure dict: {"name": "x", "last_name": "x", "age": x int }
 # project details structure: [{}, {}]
 # project detail substructure: { "quantity": x float, service_id: "x" } ... follow data will be estimated in the method
-def insert_project(name: str, init_date: datetime, end_date: datetime, budget: float, manager_id: str,
+def insert_project(name: str, start_date: datetime, budget: float, manager_id: str,
                    beneficiary_family_address: str, beneficiary_family_monthly_income: float,
-                   beneficiary_family_members: dict,
+                   beneficiary_family_last_name: str,
+                   beneficiary_family_members: list[dict],
                    project_detail: list[dict], is_finished=False):
-    data = {"name": name, "init_date": init_date, "end_date": end_date, "budget": budget,
-            "manager_id": manager_id, "is_finished": is_finished,
-            "details": project_detail,
-            "beneficiary_family": {
-                "address": beneficiary_family_address,
-                "monthly_income": beneficiary_family_monthly_income,
-                "members": beneficiary_family_members
-            }}
     try:
         # check if manager exists
         if not list(find_managers({"_id": 1}, {"_id": manager_id})):
             raise Exception(f"No manager with id {manager_id} unable to continue insert")
         # check if services exists and add additional data
-        for _item in project_detail:
-            # check if exists on DB the detail
-            mongo_data = list(find_services(None, {"_id": _item["service_id"]}))
-            if not mongo_data:
-                raise Exception(f"No service with id {_item['service_id']} unable to continue insert")
-            # add extra values based on extracted data
-            # TODO update service on quantity++
-            mongo_data = mongo_data[0] # valid data, work with single result
-            _item["subtotal"] = mongo_data["price"] * _item["quantity"]
+        project_detail = list(map(update_item, project_detail))
+        # configure end date
+        end_date = start_date + timedelta(days=365 * 3)
+        # update last name for memebres
+        list(map(lambda _member: _member.update({"last_name": beneficiary_family_last_name}),
+                 beneficiary_family_members))
+        # create JSON
+        data = {"name": name, "start_date": start_date, "end_date": end_date, "budget": budget,
+                "manager_id": manager_id, "is_finished": is_finished,
+                "details": project_detail,
+                "beneficiary_family": {
+                    "address": beneficiary_family_address,
+                    "monthly_income": beneficiary_family_monthly_income,
+                    "members": beneficiary_family_members
+                }}
+
         # valid to insert, CREATE JSON
         return DB.insert_into_collection(collection_names[1], data)
     except Exception as ex:
-        raise Exception(f"Cannot insert {data} into DB\nError: {ex}")
+        raise Exception(f"Cannot insert project into DB\nError: {ex}")
+
+
+# function to update and check if an item is into mongoDB
+def update_item(_item):
+    mongo_data = list(find_services(None, {"_id": _item["service"]["_id"]}))
+    if not mongo_data:
+        raise Exception(f"No service with id {_item['service_id']} unable to continue insert")
+    mongo_data = mongo_data[0]
+    _item["subtotal"] = mongo_data["price"] * _item["quantity"]
+    return _item
 
 
 # example data structure: {"service": x, "price": x num, "quantity": x}

@@ -1,0 +1,74 @@
+{
+  "MANAGER": [
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbddf')",
+      "name": "Daniel Bautista",
+      "address": "Calle xxxxxxxxx",
+      "dpi": "12345678"
+    },
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbde0')",
+      "name": "Pablo COti",
+      "address": "Calle yyyyyyyyy",
+      "dpi": "09876543"
+    },
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbde1')",
+      "name": "Angel Cotoc",
+      "address": "Calle zzzzzzz",
+      "dpi": "6758493920"
+    }
+  ],
+  "SERVICE": [
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbddb')",
+      "service": "LUZ",
+      "price": 123,
+      "quantity": 0
+    },
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbddc')",
+      "service": "AGUA",
+      "price": 76,
+      "quantity": 0
+    },
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbddd')",
+      "service": "BASURA",
+      "price": 20,
+      "quantity": 0
+    },
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbdde')",
+      "service": "ALUMBRADO PUBLICO",
+      "price": 15,
+      "quantity": 0
+    }
+  ],
+  "PROJECT": [
+    {
+      "_id": "ObjectId('654c74d27d218cae05bcbde2')",
+      "name": "Project no. 1",
+      "start_date": "ISODate('2023-11-08T23:57:38.984Z')",
+      "end_date": "ISODate('2026-11-07T23:57:38.984Z')",
+      "budget": 1540022.21,
+      "manager_id": "ObjectId('654c74d27d218cae05bcbddf')",
+      "is_finished": false,
+      "details": [
+        {
+          "quantity": 2,
+          "service": { "_id": "ObjectId('654c74d27d218cae05bcbddc')", "service": "AGUA" },
+          "subtotal": 152
+        }
+      ],
+      "beneficiary_family": {
+        "address": "Street A 12B x zone 2",
+        "monthly_income": 8942.2,
+        "members": [
+          { "name": "Pepe", "age": 25, "last_name": "Sinforoso" },
+          { "name": "Anacleto", "age": 19, "last_name": "Sinforoso" }
+        ]
+      }
+    }
+  ]
+}
