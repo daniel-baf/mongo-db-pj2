@@ -3,6 +3,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import uic
 from DB import DBDict
 import datetime
+import random
 
 
 class MainWindow(QMainWindow):
@@ -23,8 +24,8 @@ class MainWindow(QMainWindow):
         self.appendSibling.clicked.connect(self.append_sibling)
 
     def insert_manager(self):
-        dpi     = self.dpi.text()
-        name    = self.name.text()
+        dpi = self.dpi.text()
+        name = self.name.text()
         address = self.address.text()
 
         DBDict.insert_manager(name, address, dpi)
@@ -36,12 +37,12 @@ class MainWindow(QMainWindow):
         self.update_manager_list()
 
     def append_sibling(self):
-        age  = self.age.text()
+        age = self.age.text()
         name = self.sibling_name.text()
 
         self.family_members.append({
             'name': name,
-            'age' : age,
+            'age': age
         })
 
         self.update_member_list()
@@ -51,18 +52,23 @@ class MainWindow(QMainWindow):
 
     def insert_project(self):
         try:
-            name           = self.project_name.text()
-            budget         = self.budget.text()
-            address        = self.family_address.text()
-            last_name      = self.last_name.text()
-            start_date     = datetime.datetime.now()
-            manager_name     = self.manager_id.itemText(self.manager_id.currentIndex())
-            service_id     = self.service_id.itemText(self.service_id.currentIndex())
-            family_members = self.family_members
+            name = self.project_name.text()
+            start_date = datetime.datetime.now()
+            budget = self.budget.text()
+            manager_id = DBDict.find_managers({"_id": 1}, {
+                "name": self.manager_id.itemText(self.manager_id.currentIndex()).strip()})[0]["_id"]
+            address = self.family_address.text()
             monthly_income = self.monthly_income.text()
+            last_name = self.last_name.text()
+            family_members = self.family_members
 
-            manager_id = DBDict.find_managers({"_id": 1}, {"name": manager_name})[0]["_id"]
-            DBDict.insert_project(name, start_date, budget, manager_id, address, monthly_income, last_name, family_members, service_id, False)
+            service_id = DBDict.find_services(None, {"service": self.service_id.itemText(self.service_id.currentIndex())})[0]
+
+            project_details = [{"quantity": random.randint(1, 4),
+                                "service": {"_id": service_id["_id"], "service": service_id["service"]}}]
+
+            DBDict.insert_project(name, start_date, budget, manager_id, address, monthly_income, last_name,
+                                  family_members, project_details, False)
 
             self.budget.clear()
             self.last_name.clear()
@@ -81,10 +87,10 @@ class MainWindow(QMainWindow):
 
     def update_manager_list(self):
         try:
-            cursor = DBDict.find_managers()
+            managers_cursor = DBDict.find_managers()
 
             strings = []
-            for document in cursor:
+            for document in managers_cursor:
                 string = str(document)
                 strings.append(string)
 
@@ -100,14 +106,14 @@ class MainWindow(QMainWindow):
                 columns = []
 
                 for dato in data:
-                    columns.append(dato.split(',')[0].split('}')[0].replace(' ', ''))
+                    columns.append(dato.split(',')[0].split('}')[0].replace('\'', '').strip())
 
                 self.manager_table.insertRow(self.manager_table.rowCount())
                 self.manager_table.setItem(self.manager_table.rowCount() - 1, 0, QTableWidgetItem(columns[2]))
                 self.manager_table.setItem(self.manager_table.rowCount() - 1, 1, QTableWidgetItem(columns[3]))
                 self.manager_table.setItem(self.manager_table.rowCount() - 1, 2, QTableWidgetItem(columns[4]))
 
-                self.manager_id.addItem(columns[2].replace("'", ''))
+                self.manager_id.addItem(columns[2].replace("\'", '').strip())
 
             self.manager_logs.setText(joined_strings)
 
@@ -133,9 +139,9 @@ class MainWindow(QMainWindow):
             columns = []
 
             for dato in data:
-                columns.append(dato.split(',')[0].split('}')[0].replace(' ', ''))
+                columns.append(dato.split(',')[0].split('}')[0].replace('\'', '').strip())
 
-            self.service_id.addItem(columns[2].replace("'", ''))
+            self.service_id.addItem(columns[2].replace("\'", '').strip())
 
     def update_member_list(self):
         model = QStandardItemModel()
