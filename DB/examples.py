@@ -36,5 +36,4 @@ def run():
     DBDict.reset_setup()
     insert_examples()
 
-    print_data()
-    pass
+    # print_data()
